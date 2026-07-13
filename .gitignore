@@ -2,6 +2,7 @@ node_modules/
 dist/
 build/
 coverage/
+server/src/generated/
 .env
 .env.*
 !.env.example

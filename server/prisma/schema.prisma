@@ -1,0 +1,108 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  username     String   @unique
+  passwordHash String
+  rating       Int      @default(1000)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  submissions        Submission[]
+  battlesAsPlayerOne Battle[]     @relation("BattlePlayerOne")
+  battlesAsPlayerTwo Battle[]     @relation("BattlePlayerTwo")
+}
+
+model Problem {
+  id          String     @id @default(uuid())
+  slug        String     @unique
+  title       String
+  description String
+  difficulty  Difficulty
+  tags        String[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  submissions Submission[]
+  battles     Battle[]
+}
+
+model Submission {
+  id        String           @id @default(uuid())
+  userId    String
+  problemId String
+  battleId  String?
+  code      String
+  language  String
+  status    SubmissionStatus @default(PENDING)
+  createdAt DateTime         @default(now())
+
+  user    User    @relation(fields: [userId], references: [id])
+  problem Problem @relation(fields: [problemId], references: [id])
+  battle  Battle? @relation(fields: [battleId], references: [id])
+
+  @@index([userId])
+  @@index([problemId])
+}
+
+model Battle {
+  id          String       @id @default(uuid())
+  problemId   String
+  playerOneId String
+  playerTwoId String?
+  status      BattleStatus @default(PENDING)
+  createdAt   DateTime     @default(now())
+  startedAt   DateTime?
+  endedAt     DateTime?
+
+  problem     Problem       @relation(fields: [problemId], references: [id])
+  playerOne   User          @relation("BattlePlayerOne", fields: [playerOneId], references: [id])
+  playerTwo   User?         @relation("BattlePlayerTwo", fields: [playerTwoId], references: [id])
+  submissions Submission[]
+  events      BattleEvent[]
+
+  @@index([status])
+}
+
+model BattleEvent {
+  id        String   @id @default(uuid())
+  battleId  String
+  type      String
+  payload   Json
+  createdAt DateTime @default(now())
+
+  battle Battle @relation(fields: [battleId], references: [id])
+
+  @@index([battleId])
+}
+
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+enum SubmissionStatus {
+  PENDING
+  ACCEPTED
+  WRONG_ANSWER
+  TIME_LIMIT_EXCEEDED
+  MEMORY_LIMIT_EXCEEDED
+  RUNTIME_ERROR
+  COMPILE_ERROR
+}
+
+enum BattleStatus {
+  PENDING
+  ACTIVE
+  COMPLETED
+  ABANDONED
+}
