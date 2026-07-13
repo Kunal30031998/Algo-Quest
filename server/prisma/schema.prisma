@@ -17,8 +17,22 @@ model User {
   updatedAt    DateTime @updatedAt
 
   submissions        Submission[]
-  battlesAsPlayerOne Battle[]     @relation("BattlePlayerOne")
-  battlesAsPlayerTwo Battle[]     @relation("BattlePlayerTwo")
+  battlesAsPlayerOne Battle[]       @relation("BattlePlayerOne")
+  battlesAsPlayerTwo Battle[]       @relation("BattlePlayerTwo")
+  refreshTokens      RefreshToken[]
+}
+
+model RefreshToken {
+  id        String    @id @default(uuid())
+  userId    String
+  tokenHash String    @unique
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
 }
 
 model Problem {

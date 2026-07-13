@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
     "start": "node dist/index.js",
     "test": "jest",
     "db:migrate": "prisma migrate dev",
@@ -13,16 +14,23 @@
     "db:studio": "prisma studio"
   },
   "dependencies": {
+    "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",
+    "bcryptjs": "^3.0.3",
+    "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "pg": "^8.22.0",
     "socket.io": "^4.8.3"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
     "@types/express": "^5.0.6",
     "@types/jest": "^30.0.0",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^26.1.1",
+    "@types/pg": "^8.20.0",
     "@types/supertest": "^7.2.0",
-    "dotenv": "^17.4.2",
     "jest": "^30.4.2",
     "prisma": "^7.8.0",
     "supertest": "^7.2.2",
