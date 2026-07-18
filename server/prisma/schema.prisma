@@ -42,6 +42,7 @@ model Problem {
   description String
   difficulty  Difficulty
   tags        String[]
+  testCases   Json       @default("[]")
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 
@@ -57,6 +58,7 @@ model Submission {
   code      String
   language  String
   status    SubmissionStatus @default(PENDING)
+  output    String?
   createdAt DateTime         @default(now())
 
   user    User    @relation(fields: [userId], references: [id])
@@ -112,6 +114,7 @@ enum SubmissionStatus {
   MEMORY_LIMIT_EXCEEDED
   RUNTIME_ERROR
   COMPILE_ERROR
+  INTERNAL_ERROR
 }
 
 enum BattleStatus {

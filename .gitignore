@@ -6,6 +6,8 @@ server/src/generated/
 .env
 .env.*
 !.env.example
+judge0.conf
+!judge0.conf.example
 *.log
 .DS_Store
 BACKLOG.md

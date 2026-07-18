@@ -43,6 +43,16 @@ describe("GET /problems", () => {
     );
   });
 
+  it("never selects testCases (expected outputs would let users cheat)", async () => {
+    mockedPrisma.problem.findMany.mockResolvedValue([sampleProblem]);
+
+    await request(app).get("/problems");
+
+    const { select } = mockedPrisma.problem.findMany.mock.calls[0][0];
+    expect(select).toBeDefined();
+    expect(select.testCases).toBeUndefined();
+  });
+
   it("filters by difficulty", async () => {
     mockedPrisma.problem.findMany.mockResolvedValue([sampleProblem]);
 
@@ -89,5 +99,15 @@ describe("GET /problems/:slug", () => {
     const res = await request(app).get("/problems/does-not-exist");
 
     expect(res.status).toBe(404);
+  });
+
+  it("never selects testCases (expected outputs would let users cheat)", async () => {
+    mockedPrisma.problem.findUnique.mockResolvedValue(sampleProblem);
+
+    await request(app).get("/problems/two-sum");
+
+    const { select } = mockedPrisma.problem.findUnique.mock.calls[0][0];
+    expect(select).toBeDefined();
+    expect(select.testCases).toBeUndefined();
   });
 });

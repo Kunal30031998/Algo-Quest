@@ -4,6 +4,18 @@ import { Prisma } from "../generated/prisma/client";
 
 export const problemsRouter = Router();
 
+// testCases carries expected outputs — never expose it through the public catalog.
+const PUBLIC_PROBLEM_SELECT = {
+  id: true,
+  slug: true,
+  title: true,
+  description: true,
+  difficulty: true,
+  tags: true,
+  createdAt: true,
+  updatedAt: true,
+} satisfies Prisma.ProblemSelect;
+
 const VALID_DIFFICULTIES = ["EASY", "MEDIUM", "HARD"] as const;
 type Difficulty = (typeof VALID_DIFFICULTIES)[number];
 
@@ -27,12 +39,19 @@ problemsRouter.get("/", async (req, res) => {
     where.tags = { hasSome: tags.split(",").map((tag) => tag.trim()).filter(Boolean) };
   }
 
-  const problems = await prisma.problem.findMany({ where, orderBy: { createdAt: "asc" } });
+  const problems = await prisma.problem.findMany({
+    where,
+    orderBy: { createdAt: "asc" },
+    select: PUBLIC_PROBLEM_SELECT,
+  });
   res.status(200).json({ problems });
 });
 
 problemsRouter.get("/:slug", async (req, res) => {
-  const problem = await prisma.problem.findUnique({ where: { slug: req.params.slug } });
+  const problem = await prisma.problem.findUnique({
+    where: { slug: req.params.slug },
+    select: PUBLIC_PROBLEM_SELECT,
+  });
 
   if (!problem) {
     res.status(404).json({ error: "Problem not found" });

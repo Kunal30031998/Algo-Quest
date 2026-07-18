@@ -1,0 +1,35 @@
+# Copy to judge0.conf and fill in your own local values, e.g.:
+# node -e "console.log(require('crypto').randomBytes(16).toString('hex'))"
+
+POSTGRES_HOST=judge0-db
+POSTGRES_PORT=5432
+POSTGRES_DB=judge0
+POSTGRES_USER=judge0
+POSTGRES_PASSWORD=replace-with-a-random-hex-string
+RAILS_MAX_THREADS=5
+
+REDIS_HOST=judge0-redis
+REDIS_PORT=6379
+REDIS_PASSWORD=replace-with-a-different-random-hex-string
+
+# Our server is the only intended caller — require a shared-secret header.
+AUTHN_HEADER=X-Judge0-Auth-Token
+AUTHN_TOKEN=replace-with-a-third-random-hex-string
+
+# No network access from submitted-code execution containers.
+ENABLE_NETWORK=false
+
+# Synchronous single-submission flow for AQ-5 — no polling/webhooks yet.
+ENABLE_WAIT_RESULT=true
+MAX_QUEUE_SIZE=100
+
+# Default per-submission limits (overridable per-request); full audit is AQ-6's job.
+CPU_TIME_LIMIT=2
+CPU_EXTRA_TIME=1
+WALL_TIME_LIMIT=5
+MEMORY_LIMIT=128000
+STACK_LIMIT=64000
+MAX_PROCESSES_AND_OR_THREADS=60
+MAX_CPU_TIME_LIMIT=15
+MAX_WALL_TIME_LIMIT=20
+MAX_MEMORY_LIMIT=512000

@@ -1,0 +1,9 @@
+# Config for isolate 2.x. box_root/first_uid/first_gid/num_boxes match the
+# original judge0 1.13.1 defaults; cg_root points at the delegated cgroup v2
+# subtree that entrypoint.sh sets up at container start (see there for why).
+box_root = /var/local/lib/isolate
+lock_root = /run/isolate/locks
+cg_root = /sys/fs/cgroup/isolate.judge0
+first_uid = 60000
+first_gid = 60000
+num_boxes = 2147483647
