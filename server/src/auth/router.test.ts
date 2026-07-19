@@ -23,6 +23,17 @@ jest.mock("../db/prisma", () => ({
   },
 }));
 
+// app.ts pulls in the real Redis client (via the submissions router's rate
+// limiter); mock it so this test doesn't open a real network connection.
+jest.mock("../db/redis", () => ({ redis: {} }));
+
+// Rate limiting has its own dedicated test file — bypass it here so these
+// tests don't depend on a real Redis connection.
+jest.mock("../rateLimit/authRateLimit", () => ({
+  registerRateLimit: (_req: unknown, _res: unknown, next: () => void) => next(),
+  loginRateLimit: (_req: unknown, _res: unknown, next: () => void) => next(),
+}));
+
 const mockedPrisma = prisma as unknown as {
   user: { [K in "create" | "findUnique" | "findFirst"]: jest.Mock };
   refreshToken: { [K in "create" | "findUnique" | "update"]: jest.Mock };

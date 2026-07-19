@@ -16,6 +16,22 @@ services:
       timeout: 5s
       retries: 10
 
+  # App-level Redis: rate limiting now, Socket.io/leaderboard state in AQ-7.
+  # Deliberately separate from judge0-redis (Judge0's private job queue) —
+  # no reason for the app and the sandbox's internal queue to share a store.
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["sh", "-c", "redis-server --appendonly no --requirepass \"$$REDIS_PASSWORD\""]
+    environment:
+      REDIS_PASSWORD: algoquest
+    ports:
+      - "127.0.0.1:6379:6379"
+
+  # Judge0 gets its own network. The submitted-code sandbox already can't
+  # reach anything (ENABLE_NETWORK=false, isolate's own net namespace) —
+  # this is the layer above: even a compromised judge0-server/workers
+  # *container* can't reach algoquest's postgres or app redis.
   judge0-server:
     build: ./judge0
     image: algoquest/judge0-cgroupv2:1.13.1
@@ -25,6 +41,8 @@ services:
     env_file: judge0.conf
     ports:
       - "127.0.0.1:2358:2358"
+    networks:
+      - judge0-net
     depends_on:
       - judge0-db
       - judge0-redis
@@ -37,6 +55,8 @@ services:
     privileged: true
     cgroup: host
     env_file: judge0.conf
+    networks:
+      - judge0-net
     depends_on:
       - judge0-db
       - judge0-redis
@@ -47,12 +67,19 @@ services:
     env_file: judge0.conf
     volumes:
       - judge0-db-data:/var/lib/postgresql/data
+    networks:
+      - judge0-net
 
   judge0-redis:
     image: redis:7-alpine
     restart: unless-stopped
     command: ["sh", "-c", "redis-server --appendonly no --requirepass \"$$REDIS_PASSWORD\""]
     env_file: judge0.conf
+    networks:
+      - judge0-net
+
+networks:
+  judge0-net:
 
 volumes:
   postgres-data:

@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { prisma } from "../db/prisma";
 import { requireAuth } from "../auth/middleware";
+import { submissionRateLimit } from "../rateLimit/submissionRateLimit";
 import { Judge0UnavailableError, runSubmission } from "../judge0/client";
 import { mapJudge0Status } from "../judge0/status";
 import { LANGUAGE_IDS, isSupportedLanguage } from "../judge0/languages";
@@ -10,13 +11,18 @@ export const submissionsRouter = Router();
 
 const MAX_CODE_LENGTH = 65_536;
 const MAX_STORED_OUTPUT_LENGTH = 8_192;
+// Bounds how long a single submission can hold a Judge0 worker: each test
+// case is a sequential, synchronous (wait=true) call. This caps total
+// worst-case occupancy even if a Problem ends up with many test cases —
+// today's seed data has 1 each, but nothing else enforced this.
+const MAX_TEST_CASES_PER_SUBMISSION = 20;
 
 function truncate(value: string | null, maxLength: number): string | null {
   if (!value) return value;
   return value.length > maxLength ? `${value.slice(0, maxLength)}\n...(truncated)` : value;
 }
 
-submissionsRouter.post("/", requireAuth, async (req, res) => {
+submissionsRouter.post("/", requireAuth, submissionRateLimit, async (req, res) => {
   const { problemId, code, language } = req.body ?? {};
 
   if (
@@ -46,7 +52,7 @@ submissionsRouter.post("/", requireAuth, async (req, res) => {
     },
   });
 
-  const testCases = parseTestCases(problem.testCases);
+  const testCases = parseTestCases(problem.testCases).slice(0, MAX_TEST_CASES_PER_SUBMISSION);
   const languageId = LANGUAGE_IDS[language];
 
   try {

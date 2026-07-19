@@ -23,13 +23,18 @@ ENABLE_NETWORK=false
 ENABLE_WAIT_RESULT=true
 MAX_QUEUE_SIZE=100
 
-# Default per-submission limits (overridable per-request); full audit is AQ-6's job.
+# Default per-submission limits (the server always passes explicit values —
+# see server/src/judge0/client.ts — these are a safety net).
 CPU_TIME_LIMIT=2
 CPU_EXTRA_TIME=1
 WALL_TIME_LIMIT=5
 MEMORY_LIMIT=128000
 STACK_LIMIT=64000
 MAX_PROCESSES_AND_OR_THREADS=60
-MAX_CPU_TIME_LIMIT=15
-MAX_WALL_TIME_LIMIT=20
+
+# Ceilings — also bound compile-bomb duration since compilation runs under
+# these, not the tighter limits above. See judge0/SECURITY.md.
+MAX_CPU_TIME_LIMIT=10
+MAX_WALL_TIME_LIMIT=10
 MAX_MEMORY_LIMIT=512000
+MAX_MAX_FILE_SIZE=1024

@@ -4,6 +4,12 @@ import { env } from "../env";
 const CPU_TIME_LIMIT_SECONDS = 2;
 const WALL_TIME_LIMIT_SECONDS = 5;
 const MEMORY_LIMIT_KB = 128_000;
+// Caps output *inside* Judge0 (isolate's -f flag), so our own process never
+// buffers more than this much of a submission's stdout/stderr into memory
+// via response.json() — the actual fix for unbounded output, not the
+// post-fetch truncation in submissions/router.ts (which only protects the
+// database, not this process).
+const MAX_FILE_SIZE_KB = 1_024;
 const REQUEST_TIMEOUT_MS = 15_000;
 
 export class Judge0UnavailableError extends Error {
@@ -59,6 +65,7 @@ export async function runSubmission(options: RunOptions): Promise<Judge0Result> 
         cpu_time_limit: CPU_TIME_LIMIT_SECONDS,
         wall_time_limit: WALL_TIME_LIMIT_SECONDS,
         memory_limit: MEMORY_LIMIT_KB,
+        max_file_size: MAX_FILE_SIZE_KB,
       }),
       signal: controller.signal,
     });

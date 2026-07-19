@@ -11,6 +11,10 @@ jest.mock("../db/prisma", () => ({
   },
 }));
 
+// app.ts pulls in the real Redis client (via the submissions router's rate
+// limiter); mock it so this test doesn't open a real network connection.
+jest.mock("../db/redis", () => ({ redis: {} }));
+
 const mockedPrisma = prisma as unknown as {
   problem: { [K in "findMany" | "findUnique"]: jest.Mock };
 };

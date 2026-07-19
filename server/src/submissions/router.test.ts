@@ -22,6 +22,16 @@ jest.mock("../judge0/client", () => {
   };
 });
 
+// Rate limiting has its own dedicated test file — bypass it here so these
+// tests don't depend on a real Redis connection.
+jest.mock("../rateLimit/submissionRateLimit", () => ({
+  submissionRateLimit: (_req: unknown, _res: unknown, next: () => void) => next(),
+}));
+jest.mock("../rateLimit/authRateLimit", () => ({
+  registerRateLimit: (_req: unknown, _res: unknown, next: () => void) => next(),
+  loginRateLimit: (_req: unknown, _res: unknown, next: () => void) => next(),
+}));
+
 const mockedPrisma = prisma as unknown as {
   problem: { findUnique: jest.Mock };
   submission: { create: jest.Mock; update: jest.Mock; findUnique: jest.Mock };

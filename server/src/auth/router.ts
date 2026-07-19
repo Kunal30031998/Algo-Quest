@@ -4,6 +4,7 @@ import { prisma } from "../db/prisma";
 import { requireAuth } from "./middleware";
 import { comparePassword, hashPassword } from "./password";
 import { generateRefreshToken, hashRefreshToken, signAccessToken } from "./tokens";
+import { loginRateLimit, registerRateLimit } from "../rateLimit/authRateLimit";
 
 export const authRouter = Router();
 
@@ -26,7 +27,7 @@ async function issueTokens(userId: string) {
   return { accessToken, refreshToken: refresh.token };
 }
 
-authRouter.post("/register", async (req, res) => {
+authRouter.post("/register", registerRateLimit, async (req, res) => {
   const { email, username, password } = req.body ?? {};
 
   if (
@@ -68,7 +69,7 @@ authRouter.post("/register", async (req, res) => {
   res.status(201).json({ user: toPublicUser(user), ...tokens });
 });
 
-authRouter.post("/login", async (req, res) => {
+authRouter.post("/login", loginRateLimit, async (req, res) => {
   const { email, password } = req.body ?? {};
 
   if (typeof email !== "string" || typeof password !== "string") {
